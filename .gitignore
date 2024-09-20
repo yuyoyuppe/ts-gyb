@@ -128,3 +128,12 @@ basic-types/dist
 src/basic-types
 
 .DS_Store
+
+# Powershell scripts
+*.ps1
+
+# Lost and found paths
+found/
+
+# Generated demos
+generated/
