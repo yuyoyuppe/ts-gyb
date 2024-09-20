@@ -2,13 +2,17 @@ import { ValueTypeSource } from '../../generator/named-types';
 import { EnumSubType, EnumType } from '../../types';
 import { getDocumentationLines } from '../utils';
 import { ValueTransformer } from '../value-transformer';
+import { BaseTypeView } from './BaseTypeView';
 
-export class EnumTypeView {
+export class EnumTypeView extends BaseTypeView {
   constructor(
     private readonly enumType: EnumType,
-    private readonly source: ValueTypeSource,
-    private readonly valueTransformer: ValueTransformer
-  ) {}
+    source: ValueTypeSource,
+    valueTransformer: ValueTransformer
+  ) {
+    super(source, valueTransformer);
+    this.enum = true;
+  }
 
   get typeName(): string {
     return this.valueTransformer.convertTypeNameFromCustomMap(this.enumType.name);

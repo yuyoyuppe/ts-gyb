@@ -46,7 +46,12 @@ export class ValueParser {
     }
 
     if (methodSignature.type.kind === ts.SyntaxKind.VoidKeyword) {
-      return [null, false];
+      return [{
+        kind: ValueTypeKind.voidType,
+        name: 'void',
+        customTags: {},
+        documentation: 'Represents void type'
+      }, false];
     }
 
     // Handle promise
@@ -245,6 +250,15 @@ export class ValueParser {
       return typeKind;
     }
 
+    if (typeNode.kind === ts.SyntaxKind.VoidKeyword) {
+      return {
+        kind: ValueTypeKind.voidType,
+        name: "void",
+        customTags: {},
+        documentation: "Represents void type"
+      };
+    }
+
     const typeLiteralType = this.parseTypeLiteralNode(typeNode);
     if (typeLiteralType !== null) {
       return typeLiteralType;
@@ -257,7 +271,7 @@ export class ValueParser {
 
     throw new ValueParserError(
       `type ${typeNode.getText()} is not supported`,
-      'Supproted types are: string, number, boolean, array, dictionary, object, interface and enum'
+      'Supproted types are: string, number, boolean, array, dictionary, object, interface, enum and void'
     );
   }
 

@@ -66,12 +66,10 @@ export class Parser {
 
   private traverseNode(node: ts.Node, modules: Module[]): void {
     if (ts.isModuleDeclaration(node) && node.name.text === 'global') {
-      // Handle global declaration
       if (node.body && ts.isModuleBlock(node.body)) {
         node.body.statements.forEach((statement) => this.traverseNode(statement, modules));
       }
     } else if (ts.isInterfaceDeclaration(node)) {
-      // Handle interface declaration
       const module = this.moduleFromNode(node);
       if (module !== null) {
         modules.push(module);
@@ -103,7 +101,6 @@ export class Parser {
 
     const result = this.valueParser.parseInterfaceType(node);
     if (result && isInterfaceType(result)) {
-      // Handle LogLevel as an enum
       const logLevelEnum = this.createLogLevelEnum();
       return {
         name: result.name,
@@ -135,6 +132,18 @@ export class Parser {
         customTags: {},
       },
       source: ValueTypeSource.Field | ValueTypeSource.Parameter | ValueTypeSource.Return,
+    };
+  }
+
+  private createVoidType(): NamedTypeInfo {
+    return {
+      type: {
+        kind: ValueTypeKind.voidType,
+        name: 'void',
+        customTags: {},
+        documentation: 'Represents void type',
+      },
+      source: ValueTypeSource.Return,
     };
   }
 

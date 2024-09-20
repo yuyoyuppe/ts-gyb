@@ -1,12 +1,29 @@
 import { capitalize, uncapitalize } from "../../utils";
 import { BasicType, DictionaryKeyType, DictionaryType, UnionType, ValueType, isArraryType, isBasicType, isDictionaryType } from '../../types';
 import { ValueTransformer } from '../value-transformer';
+import { BaseTypeView } from './BaseTypeView';
+import { ValueTypeSource } from "../../generator/named-types";
 
-export class UnionTypeView {
+export class UnionTypeView extends BaseTypeView {
   constructor(
     private readonly value: UnionType,
-    private readonly valueTransformer: ValueTransformer
-  ) { }
+    valueTransformer: ValueTransformer
+  ) {
+    super(ValueTypeSource.Field, valueTransformer);  // Assuming UnionType is always from a field
+    this.unionType = true;
+  }
+
+  get typeName(): string {
+    return this.valueTransformer.convertTypeNameFromCustomMap(this.value.name);
+  }
+
+  get documentationLines(): string[] {
+    return [];
+  }
+
+  get customTags(): Record<string, unknown> {
+    return {};
+  }
 
   get unionTypeName(): string {
     return this.valueTransformer.convertTypeNameFromCustomMap(this.value.name);

@@ -2,13 +2,17 @@ import { ValueTypeSource } from '../../generator/named-types';
 import { InterfaceType } from '../../types';
 import { getDocumentationLines } from '../utils';
 import { ValueTransformer } from '../value-transformer';
+import { BaseTypeView } from './BaseTypeView';
 
-export class InterfaceTypeView {
+export class InterfaceTypeView extends BaseTypeView {
   constructor(
     private readonly interfaceType: InterfaceType,
-    private readonly source: ValueTypeSource,
-    private readonly valueTransformer: ValueTransformer
-  ) {}
+    source: ValueTypeSource,
+    valueTransformer: ValueTransformer
+  ) {
+    super(source, valueTransformer);
+    this.custom = true;
+  }
 
   get typeName(): string {
     return this.valueTransformer.convertValueType(this.interfaceType);

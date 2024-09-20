@@ -3,6 +3,7 @@ import path from 'path';
 import {
   dropIPrefixInCustomTypes,
   extractTargetsSharedTypes,
+  NamedType,
   NamedTypeInfo,
   ParsedModule,
   ParsedTarget,
@@ -10,9 +11,9 @@ import {
 } from './named-types';
 import { Parser } from '../parser/Parser';
 import { renderCode } from '../renderer/renderer';
-import { NamedTypeView, ModuleView, InterfaceTypeView, EnumTypeView, UnionTypeView } from '../renderer/views';
+import { BaseTypeView, ModuleView, InterfaceTypeView, EnumTypeView, UnionTypeView, VoidTypeView } from '../renderer/views';
 import { serializeModule, serializeNamedType } from '../serializers';
-import { isEnumType, isInterfaceType } from '../types';
+import { isEnumType, isInterfaceType, isUnionType, isVoidType } from '../types';
 import { applyDefaultCustomTags } from './utils';
 import { ValueTransformer, SwiftValueTransformer, KotlinValueTransformer } from '../renderer/value-transformer';
 
@@ -34,7 +35,7 @@ export class CodeGenerator {
     private readonly defaultCustomTags: Record<string, unknown>,
     private readonly skipInvalidMethods: boolean,
     private readonly dropInterfaceIPrefix: boolean
-  ) {}
+  ) { }
 
   parseTarget(interfacePaths: string[], exportedInterfaceBases?: Set<string>, tsconfigPath?: string): ParsedTarget {
     const parser = new Parser(
@@ -123,20 +124,19 @@ export class CodeGenerator {
     }
   }
 
-  private getNamedTypeView(namedType: NamedTypeInfo, valueTransformer: ValueTransformer): NamedTypeView {
-    let namedTypeView: NamedTypeView;
-    if (isInterfaceType(namedType.type)) {
-      namedTypeView = new InterfaceTypeView(namedType.type, namedType.source, valueTransformer);
-      namedTypeView.custom = true;
-    } else if (isEnumType(namedType.type)) {
-      namedTypeView = new EnumTypeView(namedType.type, namedType.source, valueTransformer);
-      namedTypeView.enum = true;
-    } else {
-      namedTypeView = new UnionTypeView(namedType.type, valueTransformer);
-      namedTypeView.unionType = true;
+  private getNamedTypeView(namedType: NamedTypeInfo, valueTransformer: ValueTransformer): BaseTypeView {
+    const { type } = namedType;
+    if (isInterfaceType(type)) {
+      return new InterfaceTypeView(type, namedType.source, valueTransformer);
+    } if (isEnumType(type)) {
+      return new EnumTypeView(type, namedType.source, valueTransformer);
+    } if (isUnionType(type)) {
+      return new UnionTypeView(type, valueTransformer);
+    } if (isVoidType(type)) {
+      return new VoidTypeView(type, namedType.source, valueTransformer);
     }
-
-    return namedTypeView;
+    const exhaustiveCheck: never = type;
+    throw new Error(`Unsupported named type: ${(exhaustiveCheck as NamedType).kind}`);
   }
 
   private getModuleView(module: ParsedModule, valueTransformer: ValueTransformer): ModuleView {

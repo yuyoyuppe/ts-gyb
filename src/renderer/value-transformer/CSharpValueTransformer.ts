@@ -11,6 +11,7 @@ import {
   ValueType,
   Value,
   isUnionType,
+  isVoidType,
 } from '../../types';
 import { ValueTransformer } from './ValueTransformer';
 
@@ -18,6 +19,10 @@ export class CSharpValueTransformer implements ValueTransformer {
   constructor(private readonly typeNameMap: Record<string, string>) { }
 
   convertValueType(valueType: ValueType): string {
+    if (isVoidType(valueType)) {
+      return 'void';
+    }
+
     if (isBasicType(valueType)) {
       switch (valueType.value) {
         case BasicTypeValue.string:
@@ -130,6 +135,10 @@ export class CSharpValueTransformer implements ValueTransformer {
   }
 
   convertTypeNameFromCustomMap(name: string): string {
+    if (name === 'void') {
+      return 'void';
+    }
+
     return this.typeNameMap[name] ?? name;
   }
 

@@ -26,6 +26,8 @@ import {
   isBasicType,
   isPredefinedType,
   UnionType,
+  isVoidType,
+  VoidType,
 } from '../types';
 
 export const enum ValueTypeSource {
@@ -34,7 +36,7 @@ export const enum ValueTypeSource {
   Return = 1 << 2,
 }
 
-export type NamedType = InterfaceType | EnumType | UnionType;
+export type NamedType = InterfaceType | EnumType | UnionType | VoidType;
 export interface NamedTypeInfo {
   type: NamedType;
   source: ValueTypeSource;
@@ -139,15 +141,19 @@ function fetchNamedTypes(modules: Module[]): NamedTypesResult {
             namedType.customTags = {};
           } else if (isUnionType(namedType)) {
             namedType.name = path;
+          } else if (isVoidType(namedType)) {
+            (namedType as VoidType & { name: string }).name = 'void';
           }
 
-          if (typeMap[namedType.name] === undefined) {
+          if ('name' in namedType && typeMap[namedType.name] === undefined) {
             typeMap[namedType.name] = { namedType, source, associatedModules: new Set() };
           }
 
-          const existingResult = typeMap[namedType.name];
-          existingResult.associatedModules.add(module.name);
-          existingResult.source |= source;
+          if ('name' in namedType) {
+            const existingResult = typeMap[namedType.name];
+            existingResult.associatedModules.add(module.name);
+            existingResult.source |= source;
+          }
         },
         uniquePath
       );
@@ -159,8 +165,7 @@ function fetchNamedTypes(modules: Module[]): NamedTypesResult {
 
   Object.values(typeMap).forEach(({ namedType, source, associatedModules }) => {
     if (associatedModules.size === 1) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const moduleName: string = associatedModules.values().next().value;
+      const moduleName = associatedModules.values().next().value;
       if (associatedTypes[moduleName] === undefined) {
         associatedTypes[moduleName] = [];
       }
@@ -189,12 +194,12 @@ function fetchRootTypes(module: Module): { valueType: ValueType; source: ValueTy
       .concat(
         method.returnType
           ? [
-              {
-                valueType: method.returnType,
-                source: ValueTypeSource.Return,
-                uniquePath: uniquePathWithMethodReturnType(module.name, method.name),
-              },
-            ]
+            {
+              valueType: method.returnType,
+              source: ValueTypeSource.Return,
+              uniquePath: uniquePathWithMethodReturnType(module.name, method.name),
+            },
+          ]
           : []
       )
   );
@@ -204,7 +209,7 @@ function fetchRootTypes(module: Module): { valueType: ValueType; source: ValueTy
 
 function recursiveVisitMembersType(
   valueType: ValueType,
-  visit: (membersType: NamedType | TupleType | LiteralType | UnionType, path: string) => void,
+  visit: (membersType: NamedType | TupleType | LiteralType | UnionType | VoidType, path: string) => void,
   path: string
 ): void {
   if (isInterfaceType(valueType)) {
@@ -277,6 +282,12 @@ function recursiveVisitMembersType(
     // CodeGen_Int, etc.
     return;
   }
+
+  if (isVoidType(valueType)) {
+    visit(valueType, path);
+    return;
+  }
+
 
   throw Error(`Unhandled value type ${JSON.stringify(valueType)}`);
 }

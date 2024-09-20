@@ -1,13 +1,13 @@
 import { Module } from '../../types';
 import { ValueTransformer } from '../value-transformer/ValueTransformer';
 import { MethodView } from './MethodView';
-import { NamedTypeView } from './index';
+import { BaseTypeView } from './index';
 import { getDocumentationLines } from '../utils';
 
 export class ModuleView {
   constructor(
     private readonly module: Module,
-    readonly associatedTypes: NamedTypeView[],
+    readonly associatedTypes: BaseTypeView[],
     private readonly valueTransformer: ValueTransformer
   ) {}
 

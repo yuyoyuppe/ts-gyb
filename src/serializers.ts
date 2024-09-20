@@ -14,6 +14,7 @@ import {
   ValueType,
   Value,
   isUnionType,
+  isVoidType
 } from './types';
 
 const keywordColor = chalk.green;
@@ -27,32 +28,30 @@ export function serializeModule(module: Module, associatedTypes: NamedType[]): s
   const customTags =
     Object.keys(module.customTags).length > 0 ? `Custom tags: ${JSON.stringify(module.customTags)}\n` : '';
 
-  return `${serializeDocumentation(module.documentation)}${documentationColor(customTags)}${keywordColor('Module')} ${
-    module.name
-  } {
+  return `${serializeDocumentation(module.documentation)}${documentationColor(customTags)}${keywordColor('Module')} ${module.name
+    } {
 ${module.members
-  .map((member) => `${serializeDocumentation(member.documentation)}${keywordColor('var')} ${serializeField(member)}`)
-  .join('\n')
-  .split('\n')
-  .map((line) => `  ${line}`)
-  .join('\n')}
-
-${module.methods
-  .map((method) =>
-    serializeMethod(method)
+      .map((member) => `${serializeDocumentation(member.documentation)}${keywordColor('var')} ${serializeField(member)}`)
+      .join('\n')
       .split('\n')
       .map((line) => `  ${line}`)
-      .join('\n')
-  )
-  .join('\n')}${
-    serializedAssociatedTypes.length > 0
-      ? `\n\n${serializedAssociatedTypes
+      .join('\n')}
+
+${module.methods
+      .map((method) =>
+        serializeMethod(method)
+          .split('\n')
+          .map((line) => `  ${line}`)
+          .join('\n')
+      )
+      .join('\n')}${serializedAssociatedTypes.length > 0
+        ? `\n\n${serializedAssociatedTypes
           .join('\n')
           .split('\n')
           .map((line) => `  ${line}`)
           .join('\n')}`
-      : ''
-  }
+        : ''
+    }
 }`;
 }
 
@@ -65,11 +64,11 @@ export function serializeNamedType(namedType: NamedType): string {
       'Type'
     )} ${namedType.name} {
 ${namedType.members
-  .map((member) => `${serializeDocumentation(member.documentation)}${keywordColor('var')} ${serializeField(member)}`)
-  .join('\n')
-  .split('\n')
-  .map((line) => `  ${line}`)
-  .join('\n')}
+        .map((member) => `${serializeDocumentation(member.documentation)}${keywordColor('var')} ${serializeField(member)}`)
+        .join('\n')
+        .split('\n')
+        .map((line) => `  ${line}`)
+        .join('\n')}
 }`;
   }
   if (isEnumType(namedType)) {
@@ -94,6 +93,11 @@ ${namedType.members
             serializeValueType(member)
         )
         .join(' | ')}`;
+  }
+  if (isVoidType(namedType)) {
+    return `${serializeDocumentation(namedType.documentation)}${documentationColor(customTags)}${keywordColor('Type')} ${namedType.name} {
+  ${typeColor('void')}
+}`;
   }
 
   throw Error(`Unhandled value type ${JSON.stringify(namedType)}`);
@@ -137,9 +141,11 @@ function serializeValueType(valueType: ValueType): string {
   if (isPredefinedType(valueType)) {
     return valueType.name;
   }
-
   if (isUnionType(valueType)) {
     return valueType.name;
+  }
+  if (isVoidType(valueType)) {
+    return 'void';
   }
 
   throw Error(`Unhandled value type ${JSON.stringify(valueType)}`);
@@ -160,9 +166,9 @@ function serializeDocumentation(documentation: string): string {
 
   return documentationColor(`/**
 ${documentation
-  .split('\n')
-  .map((line) => ` * ${line}`)
-  .join('\n')}
+      .split('\n')
+      .map((line) => ` * ${line}`)
+      .join('\n')}
  */
 `);
 }
