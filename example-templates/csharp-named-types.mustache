@@ -1,0 +1,46 @@
+// This file is auto-generated. Do not edit.
+
+using System;
+using System.Collections.Generic;
+
+namespace Generated
+{
+    {{#.}}
+    {{#custom}}
+    public class {{typeName}}
+    {
+        {{#members}}
+        public {{type}} {{name}} { get; set; }
+        {{/members}}
+    }
+    {{/custom}}
+
+    {{#enum}}
+    public enum {{typeName}}
+    {
+        {{#members}}
+        {{key}} = {{value}}{{^last}},{{/last}}
+        {{/members}}
+    }
+    {{/enum}}
+
+    {{#unionType}}
+    // Union type {{typeName}} is represented as a class with properties for each possible type
+    public class {{typeName}}
+    {
+        {{#members}}
+        public {{type}} {{uncapitalizeName}} { get; set; }
+        {{/members}}
+
+        public {{typeName}}() {}
+
+        {{#members}}
+        public {{typeName}}({{type}} value)
+        {
+            {{uncapitalizeName}} = value;
+        }
+        {{/members}}
+    }
+    {{/unionType}}
+    {{/.}}
+}

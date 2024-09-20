@@ -1,0 +1,31 @@
+{
+    "parsing": {
+      "targets": {
+        "api": {
+          "source": ["hostMethods.ts"]
+        }
+      },
+      "predefinedTypes": [
+        "CodeGen_Int"
+      ],
+      "defaultCustomTags": {},
+      "dropInterfaceIPrefix": true
+    },
+    "rendering": {
+      "csharp": {
+        "renders": [
+          {
+            "target": "api",
+            "template": "../../example-templates/csharp-bridge.mustache",
+            "outputPath": "generated/csharp"
+          }
+        ],
+        "namedTypesTemplatePath": "../../example-templates/csharp-named-types.mustache",
+        "namedTypesOutputPath": "generated/csharp/SharedTypes.cs",
+        "typeNameMap": {
+          "CodeGen_Int": "int"
+        }
+      }
+    }
+  }
+
