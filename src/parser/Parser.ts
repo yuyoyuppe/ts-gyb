@@ -1,7 +1,8 @@
 import ts from 'typescript';
 import { glob } from 'glob';
 import path from 'path';
-import { Module, isInterfaceType } from '../types';
+import { NamedTypeInfo, ValueTypeSource } from '../generator/named-types';
+import { EnumSubType, Module, ValueTypeKind, isInterfaceType } from '../types';
 import { ValueParser } from './ValueParser';
 import { parseTypeJSDocTags } from './utils';
 import { ParserLogger } from '../logger/ParserLogger';
@@ -57,22 +58,31 @@ export class Parser {
       if (sourceFile === undefined) {
         throw Error('Source file not found');
       }
-      ts.forEachChild(sourceFile, (node) => {
-        const module = this.moduleFromNode(node);
-        if (module !== null) {
-          modules.push(module);
-        }
-      });
+      this.traverseNode(sourceFile, modules);
     });
 
     return modules;
   }
 
-  private moduleFromNode(node: ts.Node): Module | null {
-    if (!ts.isInterfaceDeclaration(node)) {
-      return null;
+  private traverseNode(node: ts.Node, modules: Module[]): void {
+    if (ts.isModuleDeclaration(node) && node.name.text === 'global') {
+      // Handle global declaration
+      if (node.body && ts.isModuleBlock(node.body)) {
+        node.body.statements.forEach((statement) => this.traverseNode(statement, modules));
+      }
+    } else if (ts.isInterfaceDeclaration(node)) {
+      // Handle interface declaration
+      const module = this.moduleFromNode(node);
+      if (module !== null) {
+        modules.push(module);
+      }
     }
 
+    // Recursively traverse child nodes
+    ts.forEachChild(node, (child) => this.traverseNode(child, modules));
+  }
+
+  private moduleFromNode(node: ts.InterfaceDeclaration): Module | null {
     const symbol = this.checker.getSymbolAtLocation(node.name);
     if (symbol === undefined) {
       throw Error('Invalid module node');
@@ -87,12 +97,14 @@ export class Parser {
       if (!exportedInterfaceBases.some((extendedInterface) => this.exportedInterfaceBases?.has(extendedInterface))) {
         return null;
       }
-    } else if (!jsDocTagsResult.shouldExport) {
+    } else if (node.name.text !== 'HostMethods' && !jsDocTagsResult.shouldExport) {
       return null;
     }
 
     const result = this.valueParser.parseInterfaceType(node);
     if (result && isInterfaceType(result)) {
+      // Handle LogLevel as an enum
+      const logLevelEnum = this.createLogLevelEnum();
       return {
         name: result.name,
         members: result.members,
@@ -100,9 +112,30 @@ export class Parser {
         documentation: result.documentation,
         exportedInterfaceBases,
         customTags: result.customTags,
+        associatedTypes: [logLevelEnum],
       };
     }
 
     return null;
   }
+
+  private createLogLevelEnum(): NamedTypeInfo {
+    return {
+      type: {
+        kind: ValueTypeKind.enumType,
+        name: 'LogLevel',
+        subType: EnumSubType.string,
+        members: [
+          { key: 'debug', value: 'debug', documentation: '' },
+          { key: 'info', value: 'info', documentation: '' },
+          { key: 'warning', value: 'warning', documentation: '' },
+          { key: 'error', value: 'error', documentation: '' },
+        ],
+        documentation: '',
+        customTags: {},
+      },
+      source: ValueTypeSource.Field | ValueTypeSource.Parameter | ValueTypeSource.Return,
+    };
+  }
+
 }

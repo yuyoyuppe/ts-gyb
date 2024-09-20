@@ -35,7 +35,7 @@ export class ValueParser {
     private readonly predefinedTypes: Set<string>,
     private readonly logger: ParserLogger,
     private readonly skipInvalidMethods: boolean
-  ) {}
+  ) { }
 
   parseFunctionReturnType(methodSignature: ts.SignatureDeclarationBase): [ValueType | null, boolean] {
     if (methodSignature.type === undefined) {
@@ -464,6 +464,7 @@ export class ValueParser {
         kind: ValueTypeKind.interfaceType,
         members: valueType.members,
         methods: [],
+        associatedTypes: [],
         ...customType,
       };
     } else if (isOptionalType(valueType) && isTupleType(valueType.wrappedType)) {
@@ -471,6 +472,7 @@ export class ValueParser {
         kind: ValueTypeKind.interfaceType,
         members: valueType.wrappedType.members,
         methods: [],
+        associatedTypes: [],
         ...customType,
       };
     }
@@ -626,6 +628,7 @@ export class ValueParser {
       methods,
       documentation,
       customTags: jsDocTagsResult.customTags,
+      associatedTypes: [],
     };
   }
 

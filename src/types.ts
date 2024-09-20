@@ -1,3 +1,5 @@
+import { NamedTypeInfo } from "./generator/named-types";
+
 export interface Module {
   name: string;
   members: Field[];
@@ -5,6 +7,7 @@ export interface Module {
   documentation: string;
   exportedInterfaceBases: string[];
   customTags: Record<string, unknown>;
+  associatedTypes: NamedTypeInfo[];
 }
 
 export interface Method {
