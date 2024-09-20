@@ -15,11 +15,12 @@ import { BaseTypeView, ModuleView, InterfaceTypeView, EnumTypeView, UnionTypeVie
 import { serializeModule, serializeNamedType } from '../serializers';
 import { isEnumType, isInterfaceType, isUnionType, isVoidType } from '../types';
 import { applyDefaultCustomTags } from './utils';
-import { ValueTransformer, SwiftValueTransformer, KotlinValueTransformer } from '../renderer/value-transformer';
+import { CSharpValueTransformer, ValueTransformer, SwiftValueTransformer, KotlinValueTransformer } from '../renderer/value-transformer';
 
 export enum RenderingLanguage {
   Swift = 'Swift',
   Kotlin = 'Kotlin',
+  CSharp = 'CSharp',
 }
 
 export interface RenderOptions {
@@ -119,6 +120,8 @@ export class CodeGenerator {
         return '.swift';
       case RenderingLanguage.Kotlin:
         return '.kt';
+      case RenderingLanguage.CSharp:
+        return '.cs';
       default:
         throw Error('Unhandled language');
     }
@@ -153,6 +156,8 @@ export class CodeGenerator {
         return new SwiftValueTransformer(typeNameMap);
       case RenderingLanguage.Kotlin:
         return new KotlinValueTransformer(typeNameMap);
+      case RenderingLanguage.CSharp:
+        return new CSharpValueTransformer(typeNameMap);
       default:
         throw Error('Unhandled language');
     }

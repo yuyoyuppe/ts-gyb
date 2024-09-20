@@ -109,6 +109,10 @@ export interface LanguageRenderingConfiguration {
    * Kotlin renderer configuration
    */
   kotlin?: RenderConfiguration;
+  /**
+   * C# renderer configuration
+   */
+  csharp?: RenderConfiguration;
 }
 
 /**
@@ -152,10 +156,11 @@ function normalizeRenderConfiguration(basePath: string, config?: RenderConfigura
 export function normalizeConfiguration(config: Configuration, basePath: string): Configuration {
   const { parsing, rendering } = config;
   const { targets, predefinedTypes, defaultCustomTags, dropInterfaceIPrefix, skipInvalidMethods } = parsing;
-  let { swift: swiftConfig, kotlin: kotlinConfig } = rendering;
+  let { swift: swiftConfig, kotlin: kotlinConfig, csharp: csharpConfig } = rendering;
 
   swiftConfig = normalizeRenderConfiguration(basePath, swiftConfig);
   kotlinConfig = normalizeRenderConfiguration(basePath, kotlinConfig);
+  csharpConfig = normalizeRenderConfiguration(basePath, csharpConfig);
 
   return {
     parsing: {
@@ -166,6 +171,7 @@ export function normalizeConfiguration(config: Configuration, basePath: string):
       skipInvalidMethods,
     },
     rendering: {
+      csharp: csharpConfig,
       swift: swiftConfig,
       kotlin: kotlinConfig,
     },

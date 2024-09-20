@@ -10,13 +10,13 @@ function run(): void {
   /* eslint-disable no-empty-function,@typescript-eslint/no-empty-function */
   program
     .scriptName('ts-gyb')
-    .command(['gen', '*'], 'generate code from a configuration file', () => {}, generate)
+    .command(['gen', '*'], 'generate code from a configuration file', () => { }, generate)
     .command(
       'list-output',
       'list all output files',
       (subprogram) => {
         subprogram
-          .option('language', { description: 'language of the output files to list', choices: ['swift', 'kotlin'] })
+          .option('language', { description: 'language of the output files to list', choices: ['swift', 'kotlin', 'csharp'] })
           .option('expand', { description: 'expand directories' });
       },
       listOutput
@@ -34,13 +34,14 @@ function run(): void {
 
 function generate(args: { config: string }): void {
   const config = parseConfig(args.config);
+  console.warn(config);
 
   generateWithConfig(config);
 }
 
-function listOutput(args: { config: string; language?: 'swift' | 'kotlin'; expand: boolean }): void {
+function listOutput(args: { config: string; language?: 'swift' | 'kotlin' | 'csharp'; expand: boolean }): void {
   const config = parseConfig(args.config);
-
+  
   let files: string[];
   if (args.language !== undefined) {
     const renderingConfig = config.rendering[args.language];

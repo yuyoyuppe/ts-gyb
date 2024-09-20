@@ -30,6 +30,7 @@ export function generateWithConfig(config: Configuration): void {
   });
 
   const languageRenderingConfigs = [
+    { language: RenderingLanguage.CSharp, renderingConfig: config.rendering.csharp },
     { language: RenderingLanguage.Swift, renderingConfig: config.rendering.swift },
     { language: RenderingLanguage.Kotlin, renderingConfig: config.rendering.kotlin },
   ];
