@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { glob } from 'glob';
 import path from 'path';
 import { NamedTypeInfo, ValueTypeSource } from '../generator/named-types';
-import { EnumSubType, Module, ValueTypeKind, isInterfaceType } from '../types';
+import { EnumSubType, Field, Method, Module, ValueTypeKind, isInterfaceType } from '../types';
 import { ValueParser } from './ValueParser';
 import { parseTypeJSDocTags } from './utils';
 import { ParserLogger } from '../logger/ParserLogger';
@@ -102,18 +102,35 @@ export class Parser {
     const result = this.valueParser.parseInterfaceType(node);
     if (result && isInterfaceType(result)) {
       const logLevelEnum = this.createLogLevelEnum();
+      const convertedMethods = this.convertHostMethodsToMethods(result.members);
       return {
         name: result.name,
-        members: result.members,
-        methods: result.methods,
+        members: [],
+        methods: convertedMethods,
         documentation: result.documentation,
         exportedInterfaceBases,
         customTags: result.customTags,
         associatedTypes: [logLevelEnum],
       };
     }
-
+  
     return null;
+  }
+  
+  private convertHostMethodsToMethods(members: Field[]): Method[] {
+    return members.map(member => ({
+      name: member.name,
+      parameters: [
+        {
+          name: 'args',
+          type: (member.type as any).members.find((m: any) => m.name === 'params').type,
+          documentation: '',
+        }
+      ],
+      returnType: (member.type as any).members.find((m: any) => m.name === 'result').type,
+      isAsync: false,
+      documentation: member.documentation,
+    }));
   }
 
   private createLogLevelEnum(): NamedTypeInfo {
