@@ -9,7 +9,8 @@
         "CodeGen_Int"
       ],
       "defaultCustomTags": {},
-      "dropInterfaceIPrefix": true
+      "dropInterfaceIPrefix": true,
+      "splitTypes": false
     },
     "rendering": {
       "csharp": {

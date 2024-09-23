@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { glob } from 'glob';
 import path from 'path';
 import { NamedTypeInfo, ValueTypeSource } from '../generator/named-types';
-import { EnumSubType, Field, Method, Module, ValueTypeKind, isInterfaceType } from '../types';
+import { EnumSubType, Field, Method, Module, ValueTypeKind, isEnumType, isInterfaceType } from '../types';
 import { ValueParser } from './ValueParser';
 import { parseTypeJSDocTags } from './utils';
 import { ParserLogger } from '../logger/ParserLogger';
@@ -103,6 +103,7 @@ export class Parser {
     if (result && isInterfaceType(result)) {
       const logLevelEnum = this.createLogLevelEnum();
       const convertedMethods = this.convertHostMethodsToMethods(result.members);
+      const associatedTypes = this.gatherAssociatedTypes(convertedMethods);
       return {
         name: result.name,
         members: [],
@@ -110,13 +111,28 @@ export class Parser {
         documentation: result.documentation,
         exportedInterfaceBases,
         customTags: result.customTags,
-        associatedTypes: [logLevelEnum],
+        associatedTypes: [logLevelEnum, ...associatedTypes],
       };
     }
-  
+
     return null;
   }
-  
+
+  private gatherAssociatedTypes(methods: Method[]): NamedTypeInfo[] {
+    const types = new Set<NamedTypeInfo>();
+    methods.forEach(method => {
+      method.parameters.forEach(param => {
+        if (isInterfaceType(param.type) || isEnumType(param.type)) {
+          types.add({ type: param.type, source: ValueTypeSource.Parameter });
+        }
+      });
+      if (method.returnType && (isInterfaceType(method.returnType) || isEnumType(method.returnType))) {
+        types.add({ type: method.returnType, source: ValueTypeSource.Return });
+      }
+    });
+    return Array.from(types);
+  }
+
   private convertHostMethodsToMethods(members: Field[]): Method[] {
     return members.map(member => ({
       name: member.name,

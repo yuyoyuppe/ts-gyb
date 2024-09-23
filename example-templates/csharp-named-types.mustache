@@ -14,30 +14,27 @@ namespace Generated
         {{/members}}
     }
     {{/custom}}
-
     {{#enum}}
     public enum {{typeName}}
     {
         {{#members}}
-        {{key}} = {{value}}{{^last}},{{/last}}
+        {{key}} = {{value}},
         {{/members}}
     }
     {{/enum}}
-
     {{#unionType}}
-    // Union type {{typeName}} is represented as a class with properties for each possible type
     public class {{typeName}}
     {
         {{#members}}
         public {{type}} {{uncapitalizeName}} { get; set; }
         {{/members}}
 
-        public {{typeName}}() {}
+        private {{typeName}}() {}
 
         {{#members}}
-        public {{typeName}}({{type}} value)
+        public static {{typeName}} From{{capitalizeName}}({{type}} value)
         {
-            {{uncapitalizeName}} = value;
+            return new {{typeName}} { {{uncapitalizeName}} = value };
         }
         {{/members}}
     }

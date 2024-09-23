@@ -160,22 +160,13 @@ function fetchNamedTypes(modules: Module[]): NamedTypesResult {
     });
   });
 
-  const associatedTypes: Record<string, NamedTypeInfo[]> = {};
   const sharedTypes: NamedTypeInfo[] = [];
 
-  Object.values(typeMap).forEach(({ namedType, source, associatedModules }) => {
-    if (associatedModules.size === 1) {
-      const moduleName = associatedModules.values().next().value;
-      if (associatedTypes[moduleName] === undefined) {
-        associatedTypes[moduleName] = [];
-      }
-      associatedTypes[moduleName].push({ type: namedType, source });
-    } else {
-      sharedTypes.push({ type: namedType, source });
-    }
+  Object.values(typeMap).forEach(({ namedType, source }) => {
+    sharedTypes.push({ type: namedType, source });
   });
 
-  return { associatedTypes, sharedTypes };
+  return { associatedTypes: {}, sharedTypes };
 }
 
 function fetchRootTypes(module: Module): { valueType: ValueType; source: ValueTypeSource; uniquePath: string }[] {

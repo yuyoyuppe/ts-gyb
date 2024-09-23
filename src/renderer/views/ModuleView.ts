@@ -34,6 +34,10 @@ export class ModuleView {
     return Object.fromEntries(this.module.exportedInterfaceBases.map((extendedInterface) => [extendedInterface, true]));
   }
 
+  get types(): BaseTypeView[] {
+    return this.associatedTypes;
+  }
+
   get customTags(): Record<string, unknown> {
     return this.module.customTags;
   }
